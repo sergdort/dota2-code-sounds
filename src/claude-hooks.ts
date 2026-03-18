@@ -1,38 +1,38 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { join } from "node:path";
-import { homedir } from "node:os";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
 
 /**
  * Marker used to identify hooks added by this package,
  * so we can cleanly uninstall without touching user-defined hooks.
  */
-const HOOK_MARKER = "dota2-code-sounds";
+const HOOK_MARKER = 'dota2-code-sounds'
 
 interface HookEntry {
-  matcher: string;
+  matcher: string
   hooks: Array<{
-    type: string;
-    command: string;
-  }>;
+    type: string
+    command: string
+  }>
 }
 
 interface ClaudeSettings {
-  hooks?: Record<string, HookEntry[]>;
-  [key: string]: unknown;
+  hooks?: Record<string, HookEntry[]>
+  [key: string]: unknown
 }
 
 /**
  * Get the path to Claude Code's global settings file.
  */
 export function getClaudeSettingsPath(): string {
-  return join(homedir(), ".claude", "settings.json");
+  return join(homedir(), '.claude', 'settings.json')
 }
 
 /**
  * Check if Claude Code config directory exists.
  */
 export function isClaudeCodeAvailable(): boolean {
-  return existsSync(join(homedir(), ".claude"));
+  return existsSync(join(homedir(), '.claude'))
 }
 
 /**
@@ -41,21 +41,21 @@ export function isClaudeCodeAvailable(): boolean {
  */
 function buildHooks(playScriptPath: string): Record<string, HookEntry[]> {
   const makeHook = (category: string): HookEntry => ({
-    matcher: "",
+    matcher: '',
     hooks: [
       {
-        type: "command",
+        type: 'command',
         command: `node "${playScriptPath}" ${category} # ${HOOK_MARKER}`,
       },
     ],
-  });
+  })
 
   return {
-    Stop: [makeHook("success")],
-    PostToolUseFailure: [makeHook("error")],
-    Notification: [makeHook("attention")],
-    SessionStart: [makeHook("start")],
-  };
+    Stop: [makeHook('success')],
+    PostToolUseFailure: [makeHook('error')],
+    Notification: [makeHook('attention')],
+    SessionStart: [makeHook('start')],
+  }
 }
 
 /**
@@ -63,81 +63,79 @@ function buildHooks(playScriptPath: string): Record<string, HookEntry[]> {
  * Merges with existing hooks without overwriting user-defined ones.
  */
 export function installClaudeHooks(playScriptPath: string): void {
-  const settingsPath = getClaudeSettingsPath();
-  const settingsDir = join(homedir(), ".claude");
+  const settingsPath = getClaudeSettingsPath()
+  const settingsDir = join(homedir(), '.claude')
 
   // Ensure directory exists
   if (!existsSync(settingsDir)) {
-    mkdirSync(settingsDir, { recursive: true });
+    mkdirSync(settingsDir, { recursive: true })
   }
 
   // Read existing settings or start fresh
-  let settings: ClaudeSettings = {};
+  let settings: ClaudeSettings = {}
   if (existsSync(settingsPath)) {
-    const raw = readFileSync(settingsPath, "utf-8");
-    settings = JSON.parse(raw) as ClaudeSettings;
+    const raw = readFileSync(settingsPath, 'utf-8')
+    settings = JSON.parse(raw) as ClaudeSettings
   }
 
   // Remove any existing dota2-code-sounds hooks first (clean reinstall)
   if (settings.hooks) {
     for (const event of Object.keys(settings.hooks)) {
       settings.hooks[event] = settings.hooks[event].filter(
-        (entry) =>
-          !entry.hooks.some((h) => h.command.includes(HOOK_MARKER))
-      );
+        (entry) => !entry.hooks.some((h) => h.command.includes(HOOK_MARKER)),
+      )
       // Remove the event key entirely if no hooks remain
       if (settings.hooks[event].length === 0) {
-        delete settings.hooks[event];
+        delete settings.hooks[event]
       }
     }
   }
 
   // Merge new hooks
-  const newHooks = buildHooks(playScriptPath);
+  const newHooks = buildHooks(playScriptPath)
   if (!settings.hooks) {
-    settings.hooks = {};
+    settings.hooks = {}
   }
 
   for (const [event, hookEntries] of Object.entries(newHooks)) {
     if (!settings.hooks[event]) {
-      settings.hooks[event] = [];
+      settings.hooks[event] = []
     }
-    settings.hooks[event].push(...hookEntries);
+    settings.hooks[event].push(...hookEntries)
   }
 
-  writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n", "utf-8");
+  writeFileSync(settingsPath, `${JSON.stringify(settings, null, 2)}\n`, 'utf-8')
 }
 
 /**
  * Remove all dota2-code-sounds hooks from ~/.claude/settings.json.
  */
 export function uninstallClaudeHooks(): void {
-  const settingsPath = getClaudeSettingsPath();
+  const settingsPath = getClaudeSettingsPath()
   if (!existsSync(settingsPath)) {
-    return;
+    return
   }
 
-  const raw = readFileSync(settingsPath, "utf-8");
-  const settings = JSON.parse(raw) as ClaudeSettings;
+  const raw = readFileSync(settingsPath, 'utf-8')
+  const settings = JSON.parse(raw) as ClaudeSettings
 
   if (!settings.hooks) {
-    return;
+    return
   }
 
   for (const event of Object.keys(settings.hooks)) {
     settings.hooks[event] = settings.hooks[event].filter(
-      (entry) =>
-        !entry.hooks.some((h) => h.command.includes(HOOK_MARKER))
-    );
+      (entry) => !entry.hooks.some((h) => h.command.includes(HOOK_MARKER)),
+    )
     if (settings.hooks[event].length === 0) {
-      delete settings.hooks[event];
+      delete settings.hooks[event]
     }
   }
 
   // Remove hooks key entirely if empty
   if (Object.keys(settings.hooks).length === 0) {
-    delete settings.hooks;
+    delete settings.hooks
   }
 
-  writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n", "utf-8");
+  writeFileSync(settingsPath, `${JSON.stringify(settings, null, 2)}\n`, 'utf-8')
 }

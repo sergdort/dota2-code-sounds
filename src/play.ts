@@ -5,7 +5,7 @@
  * Called by hooks: node <path>/dist/play.js <category>
  */
 
-import { playSound } from "./play-sound.js";
+import { playSound } from './play-sound.js'
 
-const category = process.argv[2] ?? "success";
-playSound(category);
+const category = process.argv[2] ?? 'success'
+playSound(category)

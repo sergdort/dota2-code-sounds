@@ -18,6 +18,8 @@ node dist/cli.js install --claude   # install Claude Code hooks
 node dist/cli.js install --opencode # install OpenCode plugin
 node dist/cli.js install --all      # install for both tools
 node dist/cli.js uninstall          # remove all hooks/plugins
+pnpm lint                           # check for lint/format issues
+pnpm check                          # auto-fix lint/format issues
 ```
 
 ## Architecture

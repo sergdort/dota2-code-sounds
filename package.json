@@ -12,6 +12,10 @@
   ],
   "scripts": {
     "build": "tsc",
+    "lint": "biome check src/",
+    "lint:fix": "biome check --fix src/",
+    "format": "biome format --write src/",
+    "check": "biome check --fix src/",
     "prepublishOnly": "pnpm run build"
   },
   "keywords": [
@@ -28,6 +32,7 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.8",
     "@types/node": "^25.5.0",
     "typescript": "^5.7.0"
   },
