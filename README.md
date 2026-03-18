@@ -1,6 +1,6 @@
 # dota2-code-sounds
 
-Dota 2 Axe voice line notifications for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [OpenCode](https://opencode.ai). Get notified with Axe's wisdom when your AI coding assistant completes tasks, hits errors, or needs your attention.
+Dota 2 hero voice line notifications for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [OpenCode](https://opencode.ai). Get notified with voice lines from Axe, Crystal Maiden, Pudge, Zeus, and many more when your AI coding assistant completes tasks, hits errors, or needs your attention.
 
 ## Quick Start
 
@@ -18,14 +18,14 @@ npx dota2-code-sounds install --all        # Both
 
 ## How It Works
 
-When events occur in your coding tool, Axe speaks:
+When events occur in your coding tool, a random hero speaks:
 
-| Event | Category | What Axe Says |
+| Event | Category | Example Lines |
 |-------|----------|---------------|
-| Task complete | `success` | "Good work!", "Nice! Thanks!", "Don't mind if I do!", "Axe-actly!", "All mine!", "I am greatly moved.", "What happened? Axe happened!" and more |
-| Error | `error` | "All your fault!", "All fall down.", "Bury me here.", "A better time will present itself.", "I miss my gargoyle friends..." |
-| Needs attention | `attention` | "Hey! I was thinking!", "Hey, wait for us!", "After you! No, me first!", "Be still." |
-| Session start | `start` | "TO THE ENEMY!", "Yes, Axe kills you!", "Back for more!", "Blink dagger. Now it's on.", "I quake with power!" |
+| Task complete | `success` | "Yes, Axe kills you!", "Burns, doesn't it?", "Told you a storm was coming!" |
+| Error | `error` | "An anchor around my neck!", "Okay, sure, I've made some mistakes.", "That was just a warm-up." |
+| Needs attention | `attention` | "Come to Pudge!", "Prepare thyself.", "Agony awaits." |
+| Session start | `start` | "Let the carnage begin!", "Storm Spirit is alive!", "Your God has arrived." |
 
 A random sound is picked from the matching category each time.
 
@@ -48,10 +48,10 @@ dota2-code-sounds help        # Show help
 - `SessionStart` → plays start sound
 
 **OpenCode** — Plugin written to `~/.config/opencode/plugins/dota2-sounds.js`:
-- `session.idle` → plays success sound
+- `session.status` busy→idle transition → plays success sound
 - `session.error` → plays error sound
 - `permission.asked` → plays attention sound
-- `session.created` → plays start sound
+- Plugin init → plays start sound (session.created fires too early)
 
 ## Uninstall
 
@@ -63,10 +63,15 @@ This cleanly removes only the hooks/plugins added by this package — your other
 
 ## Adding Custom Sounds
 
-1. Add `.mp3` files to the `sounds/` directory in the installed package
-2. Edit `src/play-sound.ts` to add them to the appropriate category
-3. Rebuild with `npm run build`
-4. Re-run `dota2-code-sounds install` to update paths
+1. Add `.mp3` files to the appropriate `sounds/<category>/` subdirectory
+2. Sound files are discovered at runtime — no code changes needed
+3. Re-run `dota2-code-sounds install` to update the OpenCode plugin with new sounds
+
+Sound files should follow the naming convention `Vo_<hero>_<shortname>_<type>_<num>.mp3` to enable future hero-based filtering.
+
+## Finding More Sounds
+
+Browse the full collection of Dota 2 hero voice lines at the [Dota 2 Wiki Audio Category](https://dota2.fandom.com/wiki/Category:Audio). Each hero has hundreds of voice lines covering spawns, kills, abilities, and more.
 
 ## Requirements
 
