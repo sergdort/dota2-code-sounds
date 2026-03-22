@@ -289,7 +289,6 @@ hero
 
 export { program }
 
-const isDirectRun = process.argv[1]?.endsWith('cli.js')
-if (isDirectRun) {
+if (!process.env['VITEST']) {
   program.parse()
 }
