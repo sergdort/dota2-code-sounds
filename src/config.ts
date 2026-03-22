@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path'
 
 export interface Config {
   heroes: string[]
+  soundsDir?: string
 }
 
 export function getConfigPath(): string {
@@ -18,20 +19,29 @@ export function readConfig(): Config {
   try {
     const raw = readFileSync(configPath, 'utf-8')
     const parsed = JSON.parse(raw)
-    if (Array.isArray(parsed.heroes)) {
-      return { heroes: parsed.heroes.filter((h: unknown) => typeof h === 'string') }
+    const config: Config = {
+      heroes: Array.isArray(parsed.heroes)
+        ? parsed.heroes.filter((h: unknown) => typeof h === 'string')
+        : [],
     }
-    return { heroes: [] }
+    if (typeof parsed.soundsDir === 'string' && parsed.soundsDir) {
+      config.soundsDir = parsed.soundsDir
+    }
+    return config
   } catch {
     return { heroes: [] }
   }
 }
 
-export function writeConfig(config: Config): void {
+export function writeConfig(partial: Partial<Config>): void {
   const configPath = getConfigPath()
   const dir = dirname(configPath)
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true })
   }
-  writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, 'utf-8')
+  const existing = readConfig()
+  const merged = { ...existing, ...partial }
+  // Remove undefined values so cleared fields are deleted from JSON
+  const clean = Object.fromEntries(Object.entries(merged).filter(([, v]) => v !== undefined))
+  writeFileSync(configPath, `${JSON.stringify(clean, null, 2)}\n`, 'utf-8')
 }

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { Command } from 'commander'
 import {
   getClaudeSettingsPath,
@@ -43,7 +45,7 @@ const program = new Command()
 program
   .name('dota2-hero-sounds')
   .description('Dota 2 hero voice notifications for Claude Code, OpenCode, and Pi')
-  .version('1.0.0')
+  .version('1.1.0')
 
 // ── install ──────────────────────────────────────────────────────────
 
@@ -293,6 +295,57 @@ hero
   .action(() => {
     writeConfig({ heroes: [] })
     console.log('Hero preference cleared (using all heroes)')
+  })
+
+// ── sounds ──────────────────────────────────────────────────────────
+
+const sounds = program.command('sounds').description('Manage custom sounds directory')
+
+sounds
+  .command('set')
+  .description('Set custom sounds directory (replaces default sounds)')
+  .argument('<path>', 'Absolute or relative path to sounds directory')
+  .action((dirPath: string) => {
+    const resolved = resolve(dirPath)
+
+    if (!existsSync(resolved)) {
+      console.error(`Error: Directory does not exist: ${resolved}`)
+      process.exitCode = 1
+      return
+    }
+
+    const missing = [...CATEGORIES].filter((cat) => !existsSync(`${resolved}/${cat}`))
+    if (missing.length > 0) {
+      console.error(`Error: Missing category subdirectories: ${missing.join(', ')}`)
+      console.error(
+        `Expected: ${[...CATEGORIES].map((c) => `${c}/`).join(', ')} inside ${resolved}`,
+      )
+      process.exitCode = 1
+      return
+    }
+
+    writeConfig({ soundsDir: resolved })
+    console.log(`Custom sounds directory set: ${resolved}`)
+  })
+
+sounds
+  .command('show')
+  .description('Show current sounds directory')
+  .action(() => {
+    const config = readConfig()
+    if (config.soundsDir) {
+      console.log(`Custom sounds directory: ${config.soundsDir}`)
+    } else {
+      console.log('No custom sounds directory set (using default)')
+    }
+  })
+
+sounds
+  .command('clear')
+  .description('Clear custom sounds directory (use default sounds)')
+  .action(() => {
+    writeConfig({ soundsDir: undefined })
+    console.log('Custom sounds directory cleared (using default sounds)')
   })
 
 // ── parse ────────────────────────────────────────────────────────────

@@ -19,6 +19,10 @@ export type Category = (typeof CATEGORIES)[number]
  * Works whether running from src/ (dev) or dist/ (built).
  */
 export function getSoundsDir(): string {
+  const { soundsDir } = readConfig()
+  if (soundsDir) {
+    return soundsDir
+  }
   return join(__dirname, '..', 'sounds')
 }
 

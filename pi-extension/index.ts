@@ -14,7 +14,22 @@ const CATEGORIES = ['success', 'error', 'attention', 'start'] as const
  * Resolve the sounds directory.
  * From pi-extension/index.ts -> ../sounds/
  */
+function readConfig(): Record<string, unknown> {
+  try {
+    const configPath = join(homedir(), '.config', 'dota2-sounds', 'config.json')
+    if (!existsSync(configPath)) return {}
+    const raw = readFileSync(configPath, 'utf-8')
+    return JSON.parse(raw)
+  } catch {
+    return {}
+  }
+}
+
 function getSoundsDir(): string {
+  const config = readConfig()
+  if (typeof config.soundsDir === 'string' && config.soundsDir) {
+    return config.soundsDir
+  }
   return join(__dirname, '..', 'sounds')
 }
 
@@ -39,26 +54,14 @@ function loadSoundCategories(): Record<string, string[]> {
   return result
 }
 
-let _categories: Record<string, string[]> | null = null
-
 function getCategories(): Record<string, string[]> {
-  if (!_categories) {
-    _categories = loadSoundCategories()
-  }
-  return _categories
+  return loadSoundCategories()
 }
 
 function getConfiguredHeroes(): string[] {
-  try {
-    const configPath = join(homedir(), '.config', 'dota2-sounds', 'config.json')
-    if (!existsSync(configPath)) return []
-    const raw = readFileSync(configPath, 'utf-8')
-    const parsed = JSON.parse(raw)
-    if (Array.isArray(parsed.heroes)) return parsed.heroes
-    return []
-  } catch {
-    return []
-  }
+  const config = readConfig()
+  if (Array.isArray(config.heroes)) return config.heroes as string[]
+  return []
 }
 
 function filterByHeroes(sounds: string[], heroes: string[]): string[] {

@@ -43,16 +43,40 @@ npx dota2-hero-sounds hero clear         # Reset to all heroes
 
 Hero preferences are saved to `~/.config/dota2-sounds/config.json` and take effect immediately — no reinstall needed. If a selected hero has no sounds for a category, it falls back to all heroes for that category.
 
+## Custom Sounds Directory
+
+Point to your own sounds directory to fully replace the default Dota 2 voice lines:
+
+```bash
+npx dota2-hero-sounds sounds set /path/to/my-sounds
+npx dota2-hero-sounds sounds show    # Show current setting
+npx dota2-hero-sounds sounds clear   # Revert to default sounds
+```
+
+Your directory must contain the four category subdirectories (`success/`, `error/`, `attention/`, `start/`) with `.mp3` files inside. Takes effect immediately — no reinstall needed.
+
+You can also edit `~/.config/dota2-sounds/config.json` directly:
+
+```json
+{
+  "heroes": [],
+  "soundsDir": "/path/to/my-sounds"
+}
+```
+
 ## CLI Commands
 
 ```bash
-dota2-hero-sounds install     # Install hooks/plugins
-dota2-hero-sounds uninstall   # Remove everything cleanly
-dota2-hero-sounds test        # Play one sound per category
-dota2-hero-sounds list        # Show all sounds by category
-dota2-hero-sounds hero list   # Show heroes with per-category counts
-dota2-hero-sounds hero set    # Set preferred heroes
-dota2-hero-sounds help        # Show help
+dota2-hero-sounds install       # Install hooks/plugins
+dota2-hero-sounds uninstall     # Remove everything cleanly
+dota2-hero-sounds test          # Play one sound per category
+dota2-hero-sounds list          # Show all sounds by category
+dota2-hero-sounds hero list     # Show heroes with per-category counts
+dota2-hero-sounds hero set      # Set preferred heroes
+dota2-hero-sounds sounds set    # Set custom sounds directory
+dota2-hero-sounds sounds show   # Show current sounds directory
+dota2-hero-sounds sounds clear  # Revert to default sounds
+dota2-hero-sounds help          # Show help
 ```
 
 ## What Gets Installed

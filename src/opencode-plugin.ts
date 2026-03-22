@@ -39,39 +39,48 @@ import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-const SOUNDS_DIR = ${JSON.stringify(soundsDir)};
+const DEFAULT_SOUNDS_DIR = ${JSON.stringify(soundsDir)};
 const CATEGORY_NAMES = ["success", "error", "attention", "start"];
 const CONFIG_PATH = join(homedir(), ".config", "dota2-sounds", "config.json");
 
+function readConfig() {
+  try {
+    if (!existsSync(CONFIG_PATH)) return {};
+    const raw = readFileSync(CONFIG_PATH, "utf-8");
+    return JSON.parse(raw);
+  } catch { return {}; }
+}
+
+function getSoundsDir() {
+  const config = readConfig();
+  if (typeof config.soundsDir === "string" && config.soundsDir) return config.soundsDir;
+  return DEFAULT_SOUNDS_DIR;
+}
+
 function loadSoundCategories() {
+  const soundsDir = getSoundsDir();
   const result = {};
   for (const category of CATEGORY_NAMES) {
-    const dir = SOUNDS_DIR + "/" + category;
+    const dir = soundsDir + "/" + category;
     if (!existsSync(dir)) {
       result[category] = [];
       continue;
     }
     result[category] = readdirSync(dir)
       .filter((f) => f.endsWith(".mp3"))
-      .map((f) => SOUNDS_DIR + "/" + category + "/" + f);
+      .map((f) => soundsDir + "/" + category + "/" + f);
   }
   return result;
 }
 
-let _categories = null;
 function getCategories() {
-  if (!_categories) _categories = loadSoundCategories();
-  return _categories;
+  return loadSoundCategories();
 }
 
 function getConfiguredHeroes() {
-  try {
-    if (!existsSync(CONFIG_PATH)) return [];
-    const raw = readFileSync(CONFIG_PATH, "utf-8");
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed.heroes)) return parsed.heroes;
-    return [];
-  } catch { return []; }
+  const config = readConfig();
+  if (Array.isArray(config.heroes)) return config.heroes;
+  return [];
 }
 
 function filterByHeroes(sounds, heroes) {

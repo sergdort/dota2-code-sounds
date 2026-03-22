@@ -23,6 +23,9 @@ node dist/cli.js hero list          # show available heroes with per-category co
 node dist/cli.js hero set axe pudge # set preferred heroes
 node dist/cli.js hero show          # show current hero preference
 node dist/cli.js hero clear         # clear preference (use all heroes)
+node dist/cli.js sounds set /path   # set custom sounds directory (replaces defaults)
+node dist/cli.js sounds show        # show current sounds directory
+node dist/cli.js sounds clear       # clear custom dir (use defaults)
 pnpm test                           # run unit tests
 pnpm test:watch                     # run tests in watch mode
 pnpm lint                           # check for lint/format issues
@@ -64,6 +67,8 @@ sounds/
 - Hero preferences stored in `~/.config/dota2-sounds/config.json`, read at runtime by all tools
 - Hero name extracted from filename prefix `Vo_<hero>_` — first segment after `Vo_` is the hero key
 - If configured heroes have no sounds for a category, falls back to all heroes
+- Custom sounds directory (`soundsDir` in config.json) fully replaces default sounds when set
+- All 3 runtime resolvers (play-sound.ts, OpenCode plugin, Pi extension) read `soundsDir` from config at runtime
 
 ### Event mapping per tool
 

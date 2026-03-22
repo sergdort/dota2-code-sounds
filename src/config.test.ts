@@ -57,11 +57,32 @@ describe('readConfig', () => {
     mockReadFileSync.mockReturnValue(JSON.stringify({ something: 'else' }))
     expect(readConfig()).toEqual({ heroes: [] })
   })
+
+  it('returns soundsDir when present in config', () => {
+    mockExistsSync.mockReturnValue(true)
+    mockReadFileSync.mockReturnValue(
+      JSON.stringify({ heroes: ['axe'], soundsDir: '/my/sounds' }),
+    )
+    expect(readConfig()).toEqual({ heroes: ['axe'], soundsDir: '/my/sounds' })
+  })
+
+  it('omits soundsDir when it is not a string', () => {
+    mockExistsSync.mockReturnValue(true)
+    mockReadFileSync.mockReturnValue(JSON.stringify({ heroes: [], soundsDir: 42 }))
+    expect(readConfig()).toEqual({ heroes: [] })
+  })
+
+  it('omits soundsDir when it is an empty string', () => {
+    mockExistsSync.mockReturnValue(true)
+    mockReadFileSync.mockReturnValue(JSON.stringify({ heroes: [], soundsDir: '' }))
+    expect(readConfig()).toEqual({ heroes: [] })
+  })
 })
 
 describe('writeConfig', () => {
   it('writes formatted JSON with trailing newline', () => {
     mockExistsSync.mockReturnValue(true)
+    mockReadFileSync.mockReturnValue(JSON.stringify({ heroes: [] }))
 
     writeConfig({ heroes: ['axe'] })
 
@@ -78,5 +99,40 @@ describe('writeConfig', () => {
     writeConfig({ heroes: [] })
 
     expect(mkdirSync).toHaveBeenCalledWith('/mock/home/.config/dota2-sounds', { recursive: true })
+  })
+
+  it('setting soundsDir preserves existing heroes', () => {
+    mockExistsSync.mockReturnValue(true)
+    mockReadFileSync.mockReturnValue(JSON.stringify({ heroes: ['axe', 'pudge'] }))
+
+    writeConfig({ soundsDir: '/my/sounds' })
+
+    const written = JSON.parse(mockWriteFileSync.mock.calls[0][1] as string)
+    expect(written).toEqual({ heroes: ['axe', 'pudge'], soundsDir: '/my/sounds' })
+  })
+
+  it('setting heroes preserves existing soundsDir', () => {
+    mockExistsSync.mockReturnValue(true)
+    mockReadFileSync.mockReturnValue(
+      JSON.stringify({ heroes: ['axe'], soundsDir: '/my/sounds' }),
+    )
+
+    writeConfig({ heroes: ['pudge'] })
+
+    const written = JSON.parse(mockWriteFileSync.mock.calls[0][1] as string)
+    expect(written).toEqual({ heroes: ['pudge'], soundsDir: '/my/sounds' })
+  })
+
+  it('clearing soundsDir removes the key from JSON', () => {
+    mockExistsSync.mockReturnValue(true)
+    mockReadFileSync.mockReturnValue(
+      JSON.stringify({ heroes: ['axe'], soundsDir: '/my/sounds' }),
+    )
+
+    writeConfig({ soundsDir: undefined })
+
+    const written = JSON.parse(mockWriteFileSync.mock.calls[0][1] as string)
+    expect(written).toEqual({ heroes: ['axe'] })
+    expect(written).not.toHaveProperty('soundsDir')
   })
 })
