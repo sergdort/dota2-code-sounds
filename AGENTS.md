@@ -103,13 +103,7 @@ whisper-cli -m /opt/homebrew/share/whisper-cpp/ggml-base.en.bin --no-timestamps 
 
 ## Versioning
 
-Version format is `YY.M.DD[.patch]` based on the current date. Examples:
-- First release on March 22, 2026: `26.3.22`
-- Second release same day: `26.3.22.2`
-- Third release same day: `26.3.22.3`
-- First release next day: `26.3.23`
-
-Version must be updated in three places: `package.json`, `src/cli.ts` (`.version()`), and `pi-extension/package.json`.
+Standard semver (`major.minor.patch`). Version must be updated in three places: `package.json`, `src/cli.ts` (`.version()`), and `pi-extension/package.json`.
 
 ## Agent notes
 
